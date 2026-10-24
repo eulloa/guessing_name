@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::io;
 
 use rand::prelude::*;
@@ -10,40 +11,33 @@ fn main() {
     println!("Please input your guess.");
 
     let secret_number = rand::rng().random_range(MIN..=MAX);
-
-    let mut done = 0;
-
     // println!("secret_number: {secret_number}");
 
-    let mut guess = String::new();
-    let mut users_guess: Result<i32, _>;
+    loop {
+        let mut guess = String::new();
 
-    while done == 0 {
         io::stdin()
             .read_line(&mut guess)
             .expect("Failed to read the line!");
 
         println!("You guessed {guess}!!!");
 
-        users_guess = guess.trim().parse();
-
-        match users_guess {
-            Ok(num) => {
-                if num < MIN || num > MAX {
-                    println!("Make sure to choose a number between {MIN} and {MAX}!!!");
-                }
-
-                if num == secret_number {
-                    done = 1;
-                    println!("CORRECT! Goodbye for now dear.");
-                } else {
-                    println!("WRONG! Keep guessing.");
-                    guess.clear();
-                }
-            },
+        let guess: i32 = match guess.trim().parse() {
+            Ok(num) => num,
             Err(e) => {
-                println!("Failed: {}: ", e);
+                println!("{e}");
+                continue;
+            }
+        };
+
+        match guess.cmp(&secret_number) {
+            Ordering::Less => println!("too low!"),
+            Ordering::Greater => println!("too high!"),
+            Ordering::Equal => {
+                println!("you win!");
+                break;
             }
         }
     }
 }
+
